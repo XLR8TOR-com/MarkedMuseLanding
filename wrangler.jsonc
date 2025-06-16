@@ -1,0 +1,5 @@
+{
+  "name": "markedmuse-cslanding",
+  "compatibility_date": "2025-06-16",
+  "main": "src/index.ts"
+}
