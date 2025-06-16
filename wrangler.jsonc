@@ -1,5 +1,23 @@
 {
   "name": "markedmuse-cslanding",
   "compatibility_date": "2025-06-16",
-  "main": "src/index.ts"
+  "site": {
+    "bucket": ".vercel/output/static"
+  },
+  "build": {
+    "command": "npm run pages:build"
+  },
+  "routes": [
+    {
+      "pattern": "^/.*$",
+      "content": ".vercel/output/static"
+    }
+  ],
+  "workers_dev": true,
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "triggers": {
+    "crons": []
+  }
 }

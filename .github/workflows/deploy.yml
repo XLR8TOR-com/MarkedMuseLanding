@@ -1,0 +1,113 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        run: |
+          git clone https://github.com/${{ github.repository }}.git .
+          git checkout ${{ github.ref }}
+      
+      - name: Setup Node.js
+        run: |
+          curl -fsSL https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.gz | tar -xz
+          export PATH=$PATH:$(pwd)/node-v18.18.0-linux-x64/bin
+          node --version
+          npm --version
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build with Next.js
+        run: npm run build
+      
+      - name: Build for Cloudflare Pages
+        run: npm run pages:build
+      
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler pages deploy .vercel/output/static --project-name=markedmuse-cslanding
+      
+      - name: Wait for deployment to propagate
+        run: sleep 60
+      
+      - name: Verify deployment
+        env:
+          DEPLOYMENT_URL: ${{ secrets.DEPLOYMENT_URL || 'https://markedmuse-cslanding.pages.dev' }}
+        run: |
+          echo "Verifying deployment at $DEPLOYMENT_URL"
+          node scripts/deployment-monitor.js --url=$DEPLOYMENT_URL --checks=health,links
+          
+      - name: Monitor deployment performance
+        if: success()
+        env:
+          DEPLOYMENT_URL: ${{ secrets.DEPLOYMENT_URL || 'https://markedmuse-cslanding.pages.dev' }}
+          NOTIFY_URL: ${{ secrets.MONITORING_WEBHOOK_URL }}
+        run: |
+          echo "Monitoring deployment performance at $DEPLOYMENT_URL"
+          node scripts/deployment-monitor.js --url=$DEPLOYMENT_URL --checks=performance --notifyUrl=$NOTIFY_URL --output=deployment-metrics.json
+          
+      - name: Upload monitoring results
+        if: always()
+        run: |
+          if [ -f deployment-metrics.json ]; then
+            echo "Deployment metrics available in deployment-metrics.json"
+            cat deployment-metrics.json
+            # Store metrics in a GitHub Actions output variable
+            echo "DEPLOYMENT_METRICS=$(cat deployment-metrics.json | jq -c .)" >> $GITHUB_OUTPUT
+          else
+            echo "No deployment metrics file found"
+          fi
+
+  rollback:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()
+    
+    steps:
+      - name: Checkout code
+        run: |
+          git clone https://github.com/${{ github.repository }}.git .
+          git checkout ${{ github.ref }}
+      
+      - name: Setup Node.js
+        run: |
+          curl -fsSL https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.gz | tar -xz
+          export PATH=$PATH:$(pwd)/node-v18.18.0-linux-x64/bin
+          node --version
+          npm --version
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Perform automatic rollback
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOYMENT_URL: ${{ secrets.DEPLOYMENT_URL || 'https://markedmuse-cslanding.pages.dev' }}
+          NOTIFY_URL: ${{ secrets.MONITORING_WEBHOOK_URL }}
+        run: |
+          echo "Deployment verification failed. Initiating automatic rollback..."
+          node scripts/rollback.js --force --verify --notify=$NOTIFY_URL --reason="Automatic rollback due to failed deployment verification in CI/CD"
+      
+      - name: Notify about rollback status
+        if: always()
+        run: |
+          if [ -f logs/rollback-history.json ]; then
+            echo "Rollback history:"
+            cat logs/rollback-history.json | tail -n 1
+            # Store rollback info in a GitHub Actions output variable
+            echo "ROLLBACK_INFO=$(cat logs/rollback-history.json | tail -n 1 | jq -c .)" >> $GITHUB_OUTPUT
+          else
+            echo "No rollback history file found"
+          fi
