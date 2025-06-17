@@ -59,7 +59,7 @@ export default function Home() {
     },
     {
       name: 'FSO',
-      description: 'Gaming and creative community hub engaging the future through innovative content and experiences.',
+      description: 'Gaming, Music, and development community engaging the future through innovative content and experiences.',
       image: '/fso.png',
       url: 'https://fso.gg',
       genre: 'Gaming/Creative'
