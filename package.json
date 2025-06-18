@@ -1,23 +1,12 @@
 {
   "name": "MarkedMuseCS",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
-    "pages:watch": "npx @cloudflare/next-on-pages --watch",
-    "pages:dev": "npx wrangler pages dev .vercel/output/static --compatibility-date=2025-06-16",
-    "monitor": "node scripts/deployment-monitor.js",
-    "monitor:health": "node scripts/deployment-monitor.js --checks=health",
-    "monitor:post-deploy": "node scripts/deployment-monitor.js --checks=health,links,performance",
-    "postdeploy": "npm run monitor:post-deploy",
-    "rollback": "node scripts/rollback.js",
-    "rollback:previous": "node scripts/rollback.js --force",
-    "rollback:verify": "node scripts/rollback.js --verify"
+    "start": "PORT=3001 node start.js",
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -78,9 +67,5 @@
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
     "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.12",
-    "wrangler": "^4.20.0"
   }
 }
