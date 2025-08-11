@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Music, Users, Zap, Mail, MessageCircle, ArrowRight, Play, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Home() {
@@ -358,6 +359,14 @@ export default function Home() {
               <p className="text-slate-400 text-sm">
                 © 2025 MarkedMuse. Building the future of creative communities.
               </p>
+              <div className="text-slate-400 text-sm mt-2 flex gap-4 justify-center md:justify-end">
+                <Link href="/tos" className="hover:text-slate-100 transition-colors">
+                  Terms of Service
+                </Link>
+                <Link href="/privacy" className="hover:text-slate-100 transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
               <p className="text-slate-500 text-xs mt-1">
                 Coming Soon • Stay Tuned
               </p>
