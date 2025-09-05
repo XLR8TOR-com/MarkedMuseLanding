@@ -7,6 +7,8 @@ export interface TextareaProps
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
+    // spellCheck and data-ms-editor are not valid props and cause hydration errors.
+    const { spellCheck, 'data-ms-editor': dataMsEditor, ...rest } = props;
     return (
       <textarea
         className={cn(
@@ -14,7 +16,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className
         )}
         ref={ref}
-        {...props}
+        {...rest}
       />
     );
   }
