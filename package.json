@@ -1,11 +1,11 @@
 {
-  "name": "MarkedMuseCS",
-  "version": "0.1.7",
+  "name": "markedmusecs",
+  "version": "0.1.9",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx serve@latest out",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
